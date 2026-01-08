@@ -1,17 +1,17 @@
-"use client"; 
-import { GalleryVerticalEnd, Snowflake } from "lucide-react"
+"use client";
+import { GalleryVerticalEnd, Snowflake } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { SiGithub } from '@icons-pack/react-simple-icons';
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { SiGithub } from "@icons-pack/react-simple-icons";
 import { useRouter } from "next/navigation";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
@@ -23,9 +23,7 @@ export function LoginForm({
   isLoginForm,
   ...props
 }: LoginFormProps) {
-
-
-const router = useRouter();
+  const router = useRouter();
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -44,13 +42,15 @@ const router = useRouter();
             <h1 className="text-xl font-bold">
               {isLoginForm ? "Welcome back to Xed-Editor" : "Create an account"}
             </h1>
-            <FieldDescription onClick={()=>{
-                  if(isLoginForm){
-                    router.push("/signup");
-                  }else{
-                    router.push("/login");
-                  }
-            }}>
+            <FieldDescription
+              onClick={() => {
+                if (isLoginForm) {
+                  router.push("/signup");
+                } else {
+                  router.push("/login");
+                }
+              }}
+            >
               {isLoginForm ? (
                 <>
                   Don&apos;t have an account? <a href="#">Sign up</a>
@@ -72,20 +72,19 @@ const router = useRouter();
             />
           </Field>
           <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Password"
-                required
-              />
-            </Field>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Password"
+              required
+            />
+          </Field>
           <Field>
             <Button type="submit">{isLoginForm ? "Login" : "Sign Up"}</Button>
           </Field>
           <FieldSeparator>Or</FieldSeparator>
           <Field className="grid gap-4 sm:grid-cols-2">
-
             <Button variant="outline" type="button">
               <SiGithub color="default" size={24} />
               Continue with Github
