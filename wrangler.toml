@@ -21,7 +21,7 @@ binding = "IMAGES"
 binding = "DB"
 database_name = "xed-db"
 database_id = "39300012-c9ff-418f-9938-030bceba2586"
-remote = true
+#remote = true
 
 [[r2_buckets]]
 binding = "R2"
