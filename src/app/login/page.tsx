@@ -1,8 +1,11 @@
+import { LoginForm } from "@/components/login-form"
+
 export default function LoginPage() {
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Welcome to this page!</h1>
-      <p>This is your page content.</p>
-    </main>
-  );
+    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+      <div className="w-full max-w-sm">
+       <LoginForm isLoginForm={true} />
+      </div>
+    </div>
+  )
 }
