@@ -1,3 +1,4 @@
+"use client"; 
 import { GalleryVerticalEnd, Snowflake } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { SiGithub } from '@icons-pack/react-simple-icons';
+import { useRouter } from "next/navigation";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
   isLoginForm: boolean;
@@ -21,6 +23,10 @@ export function LoginForm({
   isLoginForm,
   ...props
 }: LoginFormProps) {
+
+
+const router = useRouter();
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form>
@@ -38,7 +44,13 @@ export function LoginForm({
             <h1 className="text-xl font-bold">
               {isLoginForm ? "Welcome back to Xed-Editor" : "Create an account"}
             </h1>
-            <FieldDescription>
+            <FieldDescription onClick={()=>{
+                  if(isLoginForm){
+                    router.push("/signup");
+                  }else{
+                    router.push("/login");
+                  }
+            }}>
               {isLoginForm ? (
                 <>
                   Don&apos;t have an account? <a href="#">Sign up</a>
