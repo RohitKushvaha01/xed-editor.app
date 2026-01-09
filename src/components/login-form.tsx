@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { Snowflake } from "lucide-react";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,18 @@ import { Input } from "@/components/ui/input";
 // Import the actions we defined earlier
 import { loginWithCredentials, loginWithProvider } from "@/app/actions/auth";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 interface LoginFormProps extends React.ComponentProps<"div"> {
   isLoginForm: boolean;
 }
@@ -33,12 +45,13 @@ export function LoginForm({
 }: LoginFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleLogin(formData: FormData) {
     startTransition(async () => {
       const result = await loginWithCredentials(formData);
       if (result?.error) {
-        alert(result.error);
+        setErrorMessage(result.error);
       }
     });
   }
@@ -48,7 +61,7 @@ export function LoginForm({
       const result = await signup(formData);
 
       if (result?.error) {
-        alert(result.error);
+        setErrorMessage(result.error);
         return;
       }
 
@@ -66,7 +79,13 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form action={isLoginForm ? handleLogin : handleSignup}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          isLoginForm ? handleLogin(formData) : handleSignup(formData);
+        }}
+      >
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
             <div className="flex flex-col items-center gap-2 font-medium">
@@ -97,6 +116,19 @@ export function LoginForm({
               )}
             </FieldDescription>
           </div>
+          {!isLoginForm && (
+            <Field>
+              <FieldLabel htmlFor="name">Name</FieldLabel>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="John Doe"
+                required
+                disabled={isPending}
+              />
+            </Field>
+          )}
 
           <Field>
             <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -141,6 +173,23 @@ export function LoginForm({
           </Button>
         </FieldGroup>
       </form>
+
+      <AlertDialog
+        open={!!errorMessage}
+        onOpenChange={() => setErrorMessage(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Authentication Error</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorMessage(null)}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <FieldDescription className="px-6 text-center text-xs">
         By clicking continue, you agree to our{" "}

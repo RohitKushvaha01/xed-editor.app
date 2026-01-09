@@ -7,12 +7,24 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, UserCircle } from "lucide-react"; // Added UserCircle icon
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
-export default function Header() {
+interface HeaderProps {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+  };
+  logoutAction?: () => Promise<void>;
+}
+
+export default function Header({ user, logoutAction }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname(); // Get current route
+
+  const isDashboard = pathname === "/dashboard";
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -24,22 +36,20 @@ export default function Header() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-
             <SheetContent side="left" className="w-72 pt-8">
               <VisuallyHidden>
                 <SheetTitle>Navigation Menu</SheetTitle>
               </VisuallyHidden>
-
               <div className="mt-6 flex flex-col gap-4">
                 <Button variant="ghost" onClick={() => router.push("/")}>
                   Home
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    window.location.href =
-                      "https://xed-editor.github.io/Xed-Docs/";
-                  }}
+                  onClick={() =>
+                    (window.location.href =
+                      "https://xed-editor.github.io/Xed-Docs/")
+                  }
                 >
                   Docs
                 </Button>
@@ -50,15 +60,37 @@ export default function Header() {
           </Sheet>
 
           <div
-            className="text-lg font-semibold"
+            className="cursor-pointer text-lg font-semibold"
             onClick={() => router.push("/")}
           >
             Xed-Editor
           </div>
         </div>
 
-        {/* RIGHT SIDE (UNCHANGED) */}
-        <Button onClick={() => router.push("/login")}>Login</Button>
+        {/* RIGHT SIDE: Conditional Logic */}
+        <div className="flex items-center gap-4">
+          {!user ? (
+            // 1. Not logged in -> Show Login
+            <Button onClick={() => router.push("/login")}>Login</Button>
+          ) : isDashboard ? (
+            // 2. Logged in AND on Dashboard -> Show Logout
+            <form action={logoutAction}>
+              <Button variant="outline" type="submit">
+                Logout
+              </Button>
+            </form>
+          ) : (
+            // 3. Logged in AND NOT on Dashboard -> Show Profile/Dashboard link
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => router.push("/dashboard")}
+            >
+              <UserCircle className="h-5 w-5" />
+              <span>Profile</span>
+            </Button>
+          )}
+        </div>
       </div>
     </header>
   );

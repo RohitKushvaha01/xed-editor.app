@@ -11,8 +11,9 @@ import { eq } from "drizzle-orm";
 export async function signup(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const name = formData.get("name") as string;
 
-  if (!email || !password) return { error: "Missing email or password" };
+  if (!email || !password || !name) return { error: "Missing email, password, or name" };
 
   const { env } = getCloudflareContext<CloudflareEnv>();
   assertEnv(env);
@@ -31,6 +32,7 @@ export async function signup(formData: FormData) {
     id: crypto.randomUUID(),
     email,
     password: hashed,
+    name: name
   });
 
   return { success: true };
