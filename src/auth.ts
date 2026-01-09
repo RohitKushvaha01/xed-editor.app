@@ -21,6 +21,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
   assertEnv(env);
   const db = drizzle(env.DB, { schema });
 
+  console.log("GITHUB_CLIENT_ID:", env.AUTH_GITHUB_ID);
+console.log("GITHUB_CLIENT_SECRET exists:", !!env.AUTH_GITHUB_SECRET);
+
+
   return {
     trustHost: true,
     adapter: DrizzleAdapter(db), // only handles GitHub
