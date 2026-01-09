@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
+import { signup } from "@/app/actions/signup";
+
 import {
   Field,
   FieldDescription,
@@ -31,14 +34,26 @@ export function LoginForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // Handle Email/Password Login
-  async function handleCredentialsLogin(formData: FormData) {
+  async function handleLogin(formData: FormData) {
     startTransition(async () => {
       const result = await loginWithCredentials(formData);
       if (result?.error) {
-        // You can replace this with a toast notification like sonner or shadcn toast
         alert(result.error);
       }
+    });
+  }
+
+  async function handleSignup(formData: FormData) {
+    startTransition(async () => {
+      const result = await signup(formData);
+
+      if (result?.error) {
+        alert(result.error);
+        return;
+      }
+
+      // Optional: auto-login after signup
+      await loginWithCredentials(formData);
     });
   }
 
@@ -51,7 +66,7 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form action={handleCredentialsLogin}>
+      <form action={isLoginForm ? handleLogin : handleSignup}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
             <div className="flex flex-col items-center gap-2 font-medium">

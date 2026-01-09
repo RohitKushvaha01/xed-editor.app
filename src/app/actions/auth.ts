@@ -1,47 +1,46 @@
 // app/actions/auth.ts
-"use server"
+"use server";
 
 import { signIn } from "@/auth";
 import { hash } from "bcryptjs";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
 import { AuthError } from "next-auth";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import type { CloudflareEnv } from "@/types/cloudflare";
+import { assertEnv } from "@/lib/assert-env";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
-interface CloudflareEnv {
-  DB: D1Database;
-  AUTH_SECRET: string;
-}
 
 export async function loginWithCredentials(formData: FormData) {
-  const isLoginForm = formData.get("isLoginForm") === "true";
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  // Accessing D1 in a Worker environment
-  // Cloudflare Workers inject bindings into the global scope/process.env
-const env = process.env as unknown as CloudflareEnv;
-  const DB = env.DB;
-    const db = drizzle(DB, { schema });
   try {
-    if (!isLoginForm) {
-      const hashedPassword = await hash(password, 10);
-      await db.insert(schema.users).values({
-        id: crypto.randomUUID(),
-        email,
-        password: hashedPassword,
-      });
+    await signIn("credentials", { 
+      email, 
+      password, 
+      redirectTo: "/dashboard" 
+    });
+  } catch (error) {
+    // 1. If it's a redirect, we MUST rethrow it so Next.js can handle the navigation
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
+    
+    // 2. Alternatively, check using the built-in helper
+    if (isRedirectError(error)) {
+      throw error;
     }
 
-    await signIn("credentials", { email, password, redirectTo: "/dashboard" });
-  } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Invalid credentials." };
+      return { error: "Invalid email or password." };
     }
-    throw error; // Rethrow to allow Next.js redirects to work
+    
+    console.error("Actual Login Error:", error);
+    return { error: "Something went wrong." };
   }
 }
-
-
 export async function loginWithProvider(provider: "github") {
   await signIn(provider, { redirectTo: "/dashboard" });
 }

@@ -7,46 +7,47 @@ import { drizzle } from "drizzle-orm/d1";
 import { compare } from "bcryptjs";
 import * as schema from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import type { CloudflareEnv } from "@/types/cloudflare";
+import { assertEnv } from "@/lib/assert-env";
 
-//NextAuth((req) => {
-// Define the shape of your environment bindings
-interface CloudflareEnv {
-  DB: D1Database;
-  AUTH_GITHUB_ID?: string;
-  AUTH_GITHUB_SECRET?: string;
-  AUTH_SECRET?: string;
+interface CredentialsInput {
+  email: string;
+  password: string;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(() => {
-  // Access the environment safely
-  const env = (process.env.NEXT_RUNTIME === "edge" 
-    ? globalThis 
-    : process.env) as unknown as CloudflareEnv;
+  const { env } = getCloudflareContext<CloudflareEnv>();
+  assertEnv(env);
+  const db = drizzle(env.DB, { schema });
 
-  const DB = env.DB; 
-
-  if (!DB) {
-    // Logging this helps debug the "prepare of undefined" error
-    console.error("D1 Database binding 'DB' is missing in the current runtime.");
-  }
-
-  const db = drizzle(DB, { schema });
   return {
-    adapter: DrizzleAdapter(db),
+    trustHost: true,
+    adapter: DrizzleAdapter(db), // only handles GitHub
     providers: [
       GitHub,
       Credentials({
         async authorize(credentials) {
-          if (!credentials?.email || !credentials?.password) return null;
+          // Return null if credentials missing
+          if (!credentials) return null;
+
+          // Type-safe runtime check
+          const email = credentials.email;
+          const password = credentials.password;
+
+          if (typeof email !== "string" || typeof password !== "string")
+            return null;
 
           const user = await db.query.users.findFirst({
-            where: eq(schema.users.email, credentials.email as string),
+            where: eq(schema.users.email, email),
           });
 
           if (!user || !user.password) return null;
-          const isValid = await compare(credentials.password as string, user.password);
 
-          return isValid ? { id: user.id, email: user.email, name: user.name } : null;
+          const isValid = await compare(password, user.password);
+          if (!isValid) return null;
+
+          return { id: user.id, email: user.email, name: user.name };
         },
       }),
     ],
