@@ -10,6 +10,7 @@ import {
 import { Menu, UserCircle } from "lucide-react"; // Added UserCircle icon
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useRouter, usePathname } from "next/navigation";
+import { ModeToggle } from "../modtoggle";
 
 interface HeaderProps {
   user?: {
@@ -90,6 +91,7 @@ export default function Header({ user, logoutAction }: HeaderProps) {
               <span>Profile</span>
             </Button>
           )}
+          <ModeToggle />
         </div>
       </div>
     </header>
