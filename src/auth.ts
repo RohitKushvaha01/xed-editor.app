@@ -55,6 +55,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
         },
       }),
     ],
+    events: {
+      async linkAccount({ user }) {
+        if (user.id) {
+          await db
+            .update(schema.user)
+            .set({ emailVerified: true })
+            .where(eq(schema.user.id, user.id));
+        }
+      },
+    },
     session: {
       strategy: "jwt",
       maxAge: 1 * 24 * 60 * 60, // 1 day instead of 30 days
