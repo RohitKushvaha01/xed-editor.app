@@ -42,8 +42,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
           if (typeof email !== "string" || typeof password !== "string")
             return null;
 
-          const user = await db.query.users.findFirst({
-            where: eq(schema.users.email, email),
+          const user = await db.query.user.findFirst({
+            where: eq(schema.user.email, email),
           });
 
           if (!user || !user.password) return null;

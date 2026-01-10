@@ -21,15 +21,15 @@ export async function signup(formData: FormData) {
   const db = drizzle(env.DB, { schema });
 
   // Check if user exists using Drizzle eq helper
-  const existing = await db.query.users.findFirst({
-    where: eq(schema.users.email, email),
+  const existing = await db.query.user.findFirst({
+    where: eq(schema.user.email, email),
   });
 
   if (existing) return { error: "Email already exists" };
 
   const hashed = await hash(password, 10);
 
-  await db.insert(schema.users).values({
+  await db.insert(schema.user).values({
     id: crypto.randomUUID(),
     email,
     password: hashed,
